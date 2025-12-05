@@ -3,6 +3,7 @@ package com.project.back_end.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.FutureOrPresent;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -24,6 +25,7 @@ public class Appointment {
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
     
+    @FutureOrPresent
     @NotNull
     @Column(name = "appointment_date", nullable = false)
     private LocalDateTime appointmentDate;

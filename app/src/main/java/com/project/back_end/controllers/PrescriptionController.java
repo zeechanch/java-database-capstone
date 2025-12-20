@@ -41,6 +41,7 @@ public class PrescriptionController {
         if (result == 1) {
             if (prescription.getAppointmentId() != null) {
                 // Logic to update appointment status if needed
+                // TODO: Implement status update logic verified by business rules
             }
 
             response.put("message", "Prescription saved");

@@ -71,7 +71,7 @@ public class Appointment {
         return id;
     }
 
-    public long getAppointment_id() {
+    public long getAppointmentId() {
         return id;
     }
 
@@ -95,8 +95,8 @@ public class Appointment {
         return notes;
     }
 
-    public void setAppointment_id(long appointment_id) {
-        this.id = id;
+    public void setAppointmentId(long appointmentId) {
+        this.id = appointmentId;
     }
 
     public void setPatient(Patient patient) {

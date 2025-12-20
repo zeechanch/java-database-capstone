@@ -1,68 +1,190 @@
 // patientAppointment.js
 import { getPatientAppointments, getPatientData, filterAppointments } from "./services/patientServices.js";
+import { showToast } from "./components/toast.js";
+import { API_BASE_URL } from "./config/config.js";
 
-const tableBody = document.getElementById("patientTableBody");
+const grid = document.getElementById("appointmentsGrid");
 const token = localStorage.getItem("token");
 
 let allAppointments = [];
-let filteredAppointments = [];
+let currentTab = 'upcoming'; // 'upcoming' or 'past'
 let patientId = null;
 
 document.addEventListener("DOMContentLoaded", initializePage);
 
 async function initializePage() {
-  try {
-    if (!token) throw new Error("No token found");
+  if (!token) {
+    window.location.href = "/";
+    return;
+  }
 
+  try {
     const patient = await getPatientData(token);
     if (!patient) throw new Error("Failed to fetch patient details");
 
     patientId = Number(patient.id);
 
-    const appointmentData = await getPatientAppointments(patientId, token, "patient") || [];
-    allAppointments = appointmentData.filter(app => app.patientId === patientId);
+    // Initial Fetch
+    await loadAppointments();
 
-    renderAppointments(allAppointments);
+    // Tab Listeners
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // Update UI
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+
+        // Update Logic
+        currentTab = e.target.dataset.tab;
+        renderAppointments();
+      });
+    });
+
+    // Search Listener
+    document.getElementById("searchBar")?.addEventListener("input", (e) => {
+      renderAppointments(e.target.value.trim());
+    });
+
   } catch (error) {
     console.error("Error loading appointments:", error);
-    alert("❌ Failed to load your appointments.");
+    grid.innerHTML = `<p class="error-text">Failed to load appointments.</p>`;
   }
 }
 
-function renderAppointments(appointments) {
-  tableBody.innerHTML = "";
+async function loadAppointments() {
+  try {
+    const data = await getPatientAppointments(patientId, token, "patient") || [];
+    // Filter specifically for this patient ID just in case
+    allAppointments = data.filter(app => app.patientId === patientId);
+    renderAppointments();
+  } catch (err) {
+    console.error(err);
+    showToast("Error loading data", "error");
+  }
+}
 
-  const actionTh = document.querySelector("#patientTable thead tr th:last-child");
-  if (actionTh) {
-    actionTh.style.display = "table-cell"; // Always show "Actions" column
+function renderAppointments(searchTerm = "") {
+  grid.innerHTML = "";
+
+  const now = new Date();
+
+  // 1. Filter by Tab
+  let filtered = allAppointments.filter(app => {
+    const appDate = new Date(app.appointmentDate);
+    if (currentTab === 'upcoming') {
+      return appDate >= now && app.status !== 2; // 2 = cancelled
+    } else {
+      return appDate < now || app.status === 2;
+    }
+  });
+
+  // 2. Filter by Search
+  if (searchTerm) {
+    const lower = searchTerm.toLowerCase();
+    filtered = filtered.filter(app =>
+      app.doctorName.toLowerCase().includes(lower)
+    );
   }
 
-  if (!appointments.length) {
-    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No Appointments Found</td></tr>`;
+  // 3. Sort
+  filtered.sort((a, b) => {
+    return currentTab === 'upcoming'
+      ? new Date(a.appointmentDate) - new Date(b.appointmentDate) // Ascending
+      : new Date(b.appointmentDate) - new Date(a.appointmentDate); // Descending (History)
+  });
+
+  // 4. Render
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+            <div class="empty-state">
+                <p>No ${currentTab} appointments found.</p>
+                ${currentTab === 'upcoming' ? '<a href="/pages/loggedPatientDashboard.html" class="cta-link">Book Now</a>' : ''}
+            </div>
+        `;
     return;
   }
 
-  appointments.forEach(appointment => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${appointment.patientName || "You"}</td>
-      <td>${appointment.doctorName}</td>
-      <td>${appointment.appointmentDate}</td>
-      <td>${appointment.appointmentTimeOnly}</td>
-      <td>${appointment.status == 0 ? `<img src="../assets/images/edit/edit.png" alt="Edit" class="prescription-btn" data-id="${appointment.patientId}">` : "-"}</td>
-    `;
-
-    if (appointment.status == 0) {
-      const actionBtn = tr.querySelector(".prescription-btn");
-      actionBtn?.addEventListener("click", () => redirectToUpdatePage(appointment));
-    }
-
-    tableBody.appendChild(tr);
+  filtered.forEach(app => {
+    const card = createAppointmentCard(app);
+    grid.appendChild(card);
   });
 }
 
+function createAppointmentCard(app) {
+  const card = document.createElement("div");
+  card.className = "appt-card";
+
+  const dateObj = new Date(app.appointmentDate);
+  const dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const isCancelled = app.status === 2;
+  const statusBadge = isCancelled
+    ? '<span class="badge badge-error">Cancelled</span>'
+    : '<span class="badge badge-success">Confirmed</span>';
+
+  card.innerHTML = `
+        <div class="card-header">
+            <div class="doc-info">
+                <h3>${app.doctorName}</h3>
+                <!-- <p class="specialty">Specialty Placeholder</p> -->
+            </div>
+            ${statusBadge}
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <span class="icon">📅</span>
+                <span>${dateStr}</span>
+            </div>
+            <div class="info-row">
+                <span class="icon">⏰</span>
+                <span>${timeStr}</span>
+            </div>
+        </div>
+        ${!isCancelled && currentTab === 'upcoming' ? `
+        <div class="card-actions">
+            <button class="btn-cancel" data-id="${app.id}">Cancel</button>
+            <button class="btn-reschedule" data-id="${app.id}">Reschedule</button>
+        </div>
+        ` : ''}
+    `;
+
+  // Attach Listeners
+  const cancelBtn = card.querySelector(".btn-cancel");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => handleCancel(app.id));
+  }
+
+  const rescheduleBtn = card.querySelector(".btn-reschedule");
+  if (rescheduleBtn) {
+    rescheduleBtn.addEventListener("click", () => redirectToUpdatePage(app));
+  }
+
+  return card;
+}
+
+async function handleCancel(id) {
+  if (!confirm("Are you sure you want to cancel this appointment?")) return;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/appointments/cancel/${id}/${token}`, {
+      method: 'DELETE'
+    });
+
+    if (response.ok) {
+      showToast("Appointment Cancelled", "success");
+      // Refresh data locally or re-fetch
+      loadAppointments();
+    } else {
+      const data = await response.json();
+      showToast(data.message || "Failed to cancel", "error");
+    }
+  } catch (err) {
+    showToast("System Error", "error");
+  }
+}
+
 function redirectToUpdatePage(appointment) {
-  // Prepare the query parameters
   const queryString = new URLSearchParams({
     appointmentId: appointment.id,
     patientId: appointment.patientId,
@@ -70,36 +192,9 @@ function redirectToUpdatePage(appointment) {
     doctorName: appointment.doctorName,
     doctorId: appointment.doctorId,
     appointmentDate: appointment.appointmentDate,
-    appointmentTime: appointment.appointmentTimeOnly,
+    appointmentTime: appointment.appointmentTimeOnly, // Ensure simple time
   }).toString();
 
-  // Redirect to the update page with the query string
-  setTimeout(() => {
-    window.location.href = `/pages/updateAppointment.html?${queryString}`;
-  }, 100);
-}
-
-
-// Search and Filter Listeners
-document.getElementById("searchBar").addEventListener("input", handleFilterChange);
-document.getElementById("appointmentFilter").addEventListener("change", handleFilterChange);
-
-async function handleFilterChange() {
-  const searchBarValue = document.getElementById("searchBar").value.trim();
-  const filterValue = document.getElementById("appointmentFilter").value;
-
-  const name = searchBarValue || null;
-  const condition = filterValue === "allAppointments" ? null : filterValue || null;
-
-  try {
-    const response = await filterAppointments(condition, name, token);
-    const appointments = response?.appointments || [];
-    filteredAppointments = appointments.filter(app => app.patientId === patientId);
-
-    renderAppointments(filteredAppointments);
-  } catch (error) {
-    console.error("Failed to filter appointments:", error);
-    alert("❌ An error occurred while filtering appointments.");
-  }
+  window.location.href = `/pages/updateAppointment.html?${queryString}`;
 }
 

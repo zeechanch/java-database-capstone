@@ -16,27 +16,28 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    
+
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
-    
+
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
-    
+
     @FutureOrPresent
     @NotNull
     @Column(name = "appointment_date", nullable = false)
     private LocalDateTime appointmentDate;
-    
+
     @NotNull
     @Column(nullable = false)
     private String status = "PENDING";
-    
+
     private String notes;
-    
-    public Appointment() {}
+
+    public Appointment() {
+    }
 
     public Appointment(Patient patient, Doctor doctor, LocalDateTime appointmentDate, String notes) {
         this.patient = patient;
@@ -44,21 +45,31 @@ public class Appointment {
         this.appointmentDate = appointmentDate;
         this.notes = notes;
     }
-    
+
     @Transient
     public LocalDateTime getEndTime() {
+        if (appointmentDate == null)
+            return null;
         return appointmentDate.plusHours(1);
     }
-    
+
     @Transient
     public LocalDate getAppointmentDateOnly() {
+        if (appointmentDate == null)
+            return null;
         return appointmentDate.toLocalDate();
     }
+
     @Transient
     public LocalTime getAppointmentTimeOnly() {
+        if (appointmentDate == null)
+            return null;
         return appointmentDate.toLocalTime();
     }
 
+    public long getId() {
+        return id;
+    }
 
     public long getAppointment_id() {
         return id;
@@ -107,7 +118,5 @@ public class Appointment {
     public void setNotes(String notes) {
         this.notes = notes;
     }
-       
 
 }
-

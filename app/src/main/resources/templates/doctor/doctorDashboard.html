@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" th:href="@{/assets/images/logo/logo.png}" />
@@ -13,62 +14,74 @@
   <link rel="stylesheet" th:href="@{/assets/css/style.css}" />
 
   <!-- General JS Utilities (Deferred for non-blocking load) -->
-  <script defer th:src="@{/static/js/render.js}"></script>
-  <script defer th:src="@{/static/js/util.js}"></script>
-  <script defer th:src="@{/static/js/header.js}"></script>
-  <script defer th:src="@{/static/js/footer.js}"></script>
+  <script src="../js/render.js" defer></script>
+  <script src="../js/util.js" defer></script>
+  <script src="../js/components/header.js" defer></script>
+  <script src="../js/components/footer.js" defer></script>
 
   <!-- Doctor Dashboard Logic (ES Module) -->
-  <script type="module" defer th:src="@{/static/js/doctorDashboard.js}"></script>
+  <script type="module" src="/js/doctorDashboard.js" defer></script>
 </head>
 
 <body onload="renderContent()">
   <div class="container">
     <div class="wrapper">
 
-      <!-- Header injected dynamically -->
       <div id="header"></div>
 
-      <!-- Main Dashboard Section -->
       <div class="main-content">
 
-        <!-- Search Bar -->
-        <input
-          type="text"
-          id="searchBar"
-          class="searchBar"
-          placeholder="Search Bar for custom output"
-          aria-label="Search Patients"
-        />
-
-        <!-- Filters -->
-        <div class="filters">
-          <button id="todayButton">Today's Appointments</button>
-          <input type="date" id="datePicker" />
+        <div class="dashboard-header">
+          <h1>Doctor Dashboard</h1>
+          <div class="date-controls">
+            <button id="todayButton" class="date-btn active">Today</button>
+            <input type="date" id="datePicker" class="date-input" />
+          </div>
         </div>
 
-        <!-- Patient Table -->
-        <table class="patient-table">
-          <thead>
-            <tr>
-              <th>Patient ID</th>
-              <th>Name</th>
-              <th>Phone No.</th>
-              <th>Email</th>
-              <th>Prescription</th>
-            </tr>
-          </thead>
-          <tbody id="patientTableBody">
-            <!-- Dynamic patient rows will be inserted here -->
-          </tbody>
-        </table>
+        <!-- Statistics Deck -->
+        <div class="stats-deck">
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-info">
+              <h3>Appointments</h3>
+              <p id="totalAppts">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+              <h3>Pending</h3>
+              <p id="pendingAppts">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <h3>Completed</h3>
+              <p id="completedAppts">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-wrapper">
+          <input type="text" id="searchBar" class="searchBar" placeholder="Search by patient name..." />
+        </div>
+
+        <!-- Grid -->
+        <div id="appointmentsGrid" class="appointments-grid">
+          <div class="empty-state">
+            <p>Loading appointments...</p>
+          </div>
+        </div>
 
       </div>
 
-      <!-- Footer injected dynamically -->
       <div id="footer"></div>
 
     </div>
   </div>
 </body>
+
 </html>

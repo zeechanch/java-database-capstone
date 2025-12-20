@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" th:href="@{/assets/images/logo/logo.png}" />
@@ -12,57 +13,99 @@
   <link rel="stylesheet" th:href="@{/assets/css/style.css}" />
 
   <!-- General JS utilities & header/footer renderers (deferred) -->
-  <script defer th:src="@{/static/js/render.js}"></script>
-  <script defer th:src="@{/static/js/util.js}"></script>
-  <script defer th:src="@{/static/js/header.js}"></script>
-  <script defer th:src="@{/static/js/footer.js}"></script>
+  <script defer th:src="@{/js/render.js}"></script>
+  <script defer th:src="@{/js/util.js}"></script>
+  <script defer th:src="@{/js/components/header.js}"></script>
+  <script defer th:src="@{/js/components/footer.js}"></script>
 </head>
+
 <body onload="renderContent()">
   <div class="container">
     <div class="wrapper">
 
       <!-- Header injected by header.js -->
       <div id="header"></div>
-
       <!-- Main dashboard area -->
       <main class="main-content" role="main" aria-label="Admin dashboard main content">
-        <!-- Search bar -->
-        <div class="controls">
-          <label for="searchBar" class="visually-hidden">Search doctors</label>
-          <input
-            type="search"
-            id="searchBar"
-            name="searchBar"
-            placeholder="Search doctors, name, hospital, or ID..."
-            aria-label="Search doctors"
-          />
 
-          <!-- Time filter -->
-          <label for="timeFilter" class="visually-hidden">Filter by time of day</label>
-          <select id="timeFilter" name="timeFilter" aria-label="Filter by time of day">
-            <option value="all" selected>All Times</option>
-            <option value="am">AM</option>
-            <option value="pm">PM</option>
-          </select>
+        <!-- Stats Section -->
+        <section class="stats-container">
+          <div class="stat-card">
+            <h3>Doctors</h3>
+            <p id="statDoctors">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Patients</h3>
+            <p id="statPatients">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Appointments</h3>
+            <p id="statAppointments">0</p>
+          </div>
+        </section>
 
-          <!-- Specialty filter -->
-          <label for="specialtyFilter" class="visually-hidden">Filter by specialty</label>
-          <select id="specialtyFilter" name="specialtyFilter" aria-label="Filter by medical specialty">
-            <option value="all" selected>All Specialties</option>
-            <option value="cardiologist">Cardiologist</option>
-            <option value="dentist">Dentist</option>
-            <option value="dermatologist">Dermatologist</option>
-            <option value="general_practitioner">General Practitioner</option>
-            <option value="neurologist">Neurologist</option>
-            <option value="pediatrician">Pediatrician</option>
-            <option value="psychiatrist">Psychiatrist</option>
-            <option value="surgeon">Surgeon</option>
-            <option value="other">Other</option>
-          </select>
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="doctors">Doctors</button>
+          <button class="tab-btn" data-tab="patients">Patients</button>
+          <button class="tab-btn" data-tab="appointments">Appointments</button>
         </div>
 
-        <!-- Dynamic content injection area (doctor cards, lists, tables, etc.) -->
-        <section id="content" aria-live="polite"></section>
+        <!-- DOCTORS VIEW -->
+        <div id="view-doctors" class="tab-content active">
+          <!-- Controls (Search/Filter) -->
+          <div class="controls">
+            <!-- Search bar -->
+            <label for="searchBar" class="visually-hidden">Search doctors</label>
+            <input type="search" id="searchBar" name="searchBar" placeholder="Search doctors, name, hospital, or ID..."
+              aria-label="Search doctors" />
+
+            <!-- Time filter -->
+            <label for="timeFilter" class="visually-hidden">Filter by time of day</label>
+            <select id="timeFilter" name="timeFilter" aria-label="Filter by time">
+              <option value="all">All Times</option>
+              <option value="morning">Morning</option>
+              <option value="afternoon">Afternoon</option>
+              <option value="evening">Evening</option>
+            </select>
+
+            <!-- Specialty filter -->
+            <label for="specialtyFilter" class="visually-hidden">Filter by specialty</label>
+            <select id="specialtyFilter" name="specialtyFilter" aria-label="Filter by specialty">
+              <option value="all">All Specialties</option>
+              <option value="cardiology">Cardiology</option>
+              <option value="dermatology">Dermatology</option>
+              <option value="neurology">Neurology</option>
+              <option value="pediatrics">Pediatrics</option>
+            </select>
+          </div>
+
+          <!-- Doctor Grid -->
+          <section id="content" class="doctor-grid" aria-live="polite">
+            <!-- Dynamic cards injected via JS -->
+            <p>Loading doctors...</p>
+          </section>
+        </div>
+
+        <!-- PATIENTS VIEW -->
+        <div id="view-patients" class="tab-content" style="display: none;">
+          <div class="controls">
+            <input type="search" id="searchPatients" placeholder="Search patients..." />
+          </div>
+          <div id="patients-list" class="list-container">
+            <p>Loading patients...</p>
+          </div>
+        </div>
+
+        <!-- APPOINTMENTS VIEW -->
+        <div id="view-appointments" class="tab-content" style="display: none;">
+          <div class="controls">
+            <input type="search" id="searchAppointments" placeholder="Search appointments..." />
+          </div>
+          <div id="appointments-list" class="list-container">
+            <p>Loading appointments...</p>
+          </div>
+        </div>
       </main>
 
       <!-- Footer injected by footer.js -->
@@ -81,7 +124,7 @@
   </div>
 
   <!-- Page-specific JavaScript modules (modern, defesrred) -->
-  <script type="module" defer th:src="@{../../static/js/adminDashboard.js}"></script>
-  <script type="module" defer th:src="@{../../static/js/doctorCard.js}"></script>
+  <script type="module" defer th:src="@{/js/adminDashboard.js}"></script>
 </body>
+
 </html>

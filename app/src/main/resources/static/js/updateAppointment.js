@@ -32,19 +32,33 @@ async function initializePage() {
         return;
       }
 
+      const timeSelect = document.getElementById("appointmentTime");
+      // Clear existing options
+      timeSelect.innerHTML = "";
+
+      if (doctor.availableTimes && doctor.availableTimes.length > 0) {
+        doctor.availableTimes.forEach(time => {
+          const option = document.createElement("option");
+          option.value = time;
+          option.textContent = time;
+          timeSelect.appendChild(option);
+        });
+      } else {
+        // Fallback if no times defined
+        const option = document.createElement("option");
+        option.textContent = "No times available";
+        timeSelect.appendChild(option);
+      }
+
       // Fill the form with the appointment data passed in the URL
       document.getElementById("patientName").value = patientName || "You";
       document.getElementById("doctorName").value = doctorName;
       document.getElementById("appointmentDate").value = appointmentDate;
-      document.getElementById("appointmentTime").value = appointmentTime;
 
-      const timeSelect = document.getElementById("appointmentTime");
-      doctor.availableTimes.forEach(time => {
-        const option = document.createElement("option");
-        option.value = time;
-        option.textContent = time;
-        timeSelect.appendChild(option);
-      });
+      // Set the selected time AFTER populating options
+      if (appointmentTime) {
+        timeSelect.value = appointmentTime;
+      }
 
       // Handle form submission for updating the appointment
       document.getElementById("updateAppointmentForm").addEventListener("submit", async (e) => {
@@ -62,7 +76,7 @@ async function initializePage() {
           id: appointmentId,
           doctor: { id: doctor.id },
           patient: { id: patientId },
-          appointmentTime: `${date}T${startTime}:00`,
+          appointmentDate: `${date}T${startTime}:00`,
           status: 0
         };
 

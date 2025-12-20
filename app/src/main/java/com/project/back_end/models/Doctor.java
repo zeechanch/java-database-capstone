@@ -9,48 +9,47 @@ import java.util.List;
 @Table(name = "doctor")
 
 public class Doctor {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    
+
     @NotNull
     @Column(nullable = false)
-    @Size(min=3,max=100)
+    @Size(min = 3, max = 100)
     private String name;
-    
+
     @NotNull
     @Column(nullable = false)
-    @Size(min=3,max=100)
+    @Size(min = 3, max = 100)
     private String speciality;
-    
+
     @NotNull
     @Column(nullable = false, unique = true)
     @Email
     private String email;
-    
+
     @NotNull
     @Column(nullable = false)
-    @Size(min=6)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) 
+    @Size(min = 6)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    
+
     @NotNull
     @Column(nullable = false)
     @Pattern(regexp = "^[0-9]{10}$")
     private String phone;
 
-    @ElementCollection
-    @CollectionTable(
-            name = "doctor_available_times",
-            joinColumns = @JoinColumn(name = "doctor_id")
-    )
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "doctor_available_times", joinColumns = @JoinColumn(name = "doctor_id"))
     @Column(name = "time_slot")
     private List<String> availableTimes;
 
-    public Doctor() {}
+    public Doctor() {
+    }
 
-    public Doctor(String name, String speciality, String email, String password, String phone, List<String> availableTimes) {
+    public Doctor(String name, String speciality, String email, String password, String phone,
+            List<String> availableTimes) {
         this.name = name;
         this.speciality = speciality;
         this.email = email;
@@ -61,6 +60,10 @@ public class Doctor {
 
     public long getId() {
         return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -110,6 +113,5 @@ public class Doctor {
     public void setAvailableTimes(List<String> availableTimes) {
         this.availableTimes = availableTimes;
     }
-    
-}
 
+}

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="../assets/css/adminDashboard.css">
   <link rel="stylesheet" href="../assets/css/doctorDashboard.css">
   <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/patientDashboard.css">
   <script src="../js/render.js" defer></script>
   <script src="../js/util.js" defer></script>
   <script src="../js/components/header.js" defer></script>
@@ -21,32 +22,32 @@
     <div class="wrapper">
       <div id="header"></div>
       <div class="main-content">
-        <h2>Patient <span>Appointment</span></h2>
-        <input type="text" id="searchBar" class="searchBar" placeholder="Search Bar for custom output" />
-                <div class="filter-wrapper">
-                    <select class="filter-select" id="appointmentFilter">
-                        <option value="allAppointments">All Appointments</option>
-                        <option value="future">Upcoming Appointments</option>
-                        <option value="past">Past Appointments</option>
-                    </select>
-                </div>
-        <table id="patientTable">
-          <thead class="table-header">
-            <tr>
-              <th>Patient Name</th>
-              <th>Doctor Name</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="patientTableBody">
-            <!-- rows will be inserted here dynamically -->
-          </tbody>
-        </table>
+        <div class="header-flex">
+          <h2>My Appointments</h2>
+          <a href="/pages/loggedPatientDashboard.html" class="back-link">&larr; Back to Dashboard</a>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+          <button class="tab-btn active" data-tab="upcoming">Upcoming</button>
+          <button class="tab-btn" data-tab="past">History</button>
+        </div>
+
+        <div class="controls-bar">
+          <input type="text" id="searchBar" class="searchBar" placeholder="Search doctor name..." />
+        </div>
+
+        <!-- Appointment Grid (Replaces Table) -->
+        <div id="appointmentsGrid" class="appointments-grid">
+          <!-- Cards injected here -->
+          <p class="loading-text">Loading appointments...</p>
+        </div>
+
+        <!-- Hidden table for reference if needed, or fully removed -->
       </div>
       <div id="footer"></div>
     </div>
   </div>
 </body>
+
 </html>

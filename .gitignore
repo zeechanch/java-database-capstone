@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+app/src/main/resources/application.properties
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -127,3 +128,34 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# ----------------------
+# Local Project Updates
+# ----------------------
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+mvnw
+mvnw.cmd
+.mvn/
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db

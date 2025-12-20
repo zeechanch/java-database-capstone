@@ -22,10 +22,16 @@ pipeline {
         stage('Docker Lint & Build') {
             steps {
                 echo 'Linting Dockerfile...'
-                sh 'docker run --rm -i hadolint/hadolint < Dockerfile'
+                sh '''
+                    export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
+                    docker run --rm -i hadolint/hadolint < Dockerfile
+                '''
 
                 echo 'Building Docker image...'
-                sh 'docker build -t spring-boot-app .'
+                sh '''
+                    export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
+                    docker build -t spring-boot-app .
+                '''
             }
         }
     }

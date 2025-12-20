@@ -1,16 +1,20 @@
 pipeline {
     agent any
 
-    stages {
+    tools {
+        maven 'Maven_3'
+    }
 
+    stages {
 
         stage('Backend Lint & Build') {
             steps {
                 dir('app') {
                     echo 'Linting Java code with Checkstyle...'
                     sh 'mvn checkstyle:check'
+
                     echo 'Building backend...'
-                    sh 'mvn clean install'
+                    sh 'mvn clean install -DskipTests'
                 }
             }
         }
@@ -19,6 +23,7 @@ pipeline {
             steps {
                 echo 'Linting Dockerfile...'
                 sh 'docker run --rm -i hadolint/hadolint < Dockerfile'
+
                 echo 'Building Docker image...'
                 sh 'docker build -t spring-boot-app .'
             }

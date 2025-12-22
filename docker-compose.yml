@@ -7,5 +7,7 @@ services:
       - "8082:7070"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/cms
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Zeeshan@2810
     extra_hosts:
       - "host.docker.internal:host-gateway"

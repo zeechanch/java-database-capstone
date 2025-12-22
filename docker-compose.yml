@@ -9,5 +9,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/cms
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=Zeeshan@2810
+      - JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     extra_hosts:
       - "host.docker.internal:host-gateway"

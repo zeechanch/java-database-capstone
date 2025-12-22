@@ -43,12 +43,18 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
-                sh '''
-                    export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
-                    docker-compose down
-                    docker-compose up -d --build
-                '''
+                script {
+                    echo 'Deploying application...'
+                    // Force remove the specific container by name (ignore error if it doesn't exist)
+                    sh 'docker rm -f spring-boot-container || true' 
+                    
+                    // Now run compose
+                    sh '''
+                        export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
+                        docker-compose down
+                        docker-compose up -d --build
+                    '''
+                }
             }
         }
     }

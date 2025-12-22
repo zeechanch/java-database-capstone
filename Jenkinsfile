@@ -45,12 +45,14 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying application...'
-                    // Force remove the specific container by name (ignore error if it doesn't exist)
-                    sh 'docker rm -f spring-boot-container || true' 
-                    
-                    // Now run compose
+                    // Combine all commands into one block so PATH applies to everything
                     sh '''
                         export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
+                        
+                        # Force remove the specific container by name (ignore error if it doesn't exist)
+                        docker rm -f spring-boot-container || true
+                        
+                        # Now run compose
                         docker-compose down
                         docker-compose up -d --build
                     '''

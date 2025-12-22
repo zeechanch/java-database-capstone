@@ -139,3 +139,59 @@ export async function deleteDoctor(id, token) {
     return { success: false, message: error.message };
   }
 }
+
+/**
+ * Get details of the currently logged-in doctor
+ * Endpoint: GET /doctor/profile/{token}
+ */
+export async function getDoctorDetails(token) {
+  try {
+    const response = await fetch(`${DOCTOR_API}/profile/${token}`);
+    if (response.ok) {
+      return await response.json();
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching doctor profile:", error);
+    return null;
+  }
+}
+
+/**
+ * Update Doctor Details
+ * Endpoint: PUT /doctor/update/{token}
+ */
+export async function updateDoctor(doctorData, token) {
+  try {
+    const response = await fetch(`${DOCTOR_API}/update/${token}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(doctorData)
+    });
+    const result = await response.json();
+    return { success: response.ok, message: result.message };
+  } catch (error) {
+    console.error("Error updating doctor:", error);
+    // Return partial success if we can't parse JSON but response was ok (rare)
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Update Doctor Availability Only
+ * Endpoint: PUT /doctor/availability/{token}
+ */
+export async function updateAvailability(availableTimes, token) {
+  try {
+    const response = await fetch(`${DOCTOR_API}/availability/${token}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(availableTimes)
+    });
+    const result = await response.json();
+    return { success: response.ok, message: result.message };
+  } catch (error) {
+    console.error("Error updating availability:", error);
+    return { success: false, message: error.message };
+  }
+}

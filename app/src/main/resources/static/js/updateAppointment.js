@@ -66,7 +66,7 @@ async function initializePage() {
 
         const date = document.getElementById("appointmentDate").value;
         const time = document.getElementById("appointmentTime").value;
-        const startTime = time.split('-')[0];
+        const startTime = time.split('-')[0].trim();
         if (!date || !time) {
           alert("Please select both date and time.");
           return;

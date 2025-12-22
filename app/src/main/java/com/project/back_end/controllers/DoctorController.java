@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("${api.path}doctor")
 public class DoctorController {
@@ -43,6 +45,15 @@ public class DoctorController {
         return new ResponseEntity<>(times, HttpStatus.OK);
     }
 
+    @GetMapping("/profile/{token}")
+    public ResponseEntity<Doctor> getDoctorProfile(@PathVariable String token) {
+        Doctor doctor = doctorService.getDoctorByToken(token);
+        if (doctor == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(doctor, HttpStatus.OK);
+    }
+
     @GetMapping
     public ResponseEntity<Map<String, List<Doctor>>> getDoctor() {
         Map<String, List<Doctor>> response = new HashMap<>();
@@ -51,7 +62,8 @@ public class DoctorController {
     }
 
     @PostMapping("/save/{token}")
-    public ResponseEntity<Map<String, String>> saveDoctor(@RequestBody Doctor doctor, @PathVariable String token) {
+    public ResponseEntity<Map<String, String>> saveDoctor(@Valid @RequestBody Doctor doctor,
+            @PathVariable String token) {
         Map<String, String> response = new HashMap<>();
         if (!service.validateToken(token, "admin").equals("valid")) {
             response.put("message", "Unauthorized");
@@ -84,8 +96,30 @@ public class DoctorController {
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
+    @PutMapping("/availability/{token}")
+    public ResponseEntity<Map<String, String>> updateAvailability(@RequestBody List<String> availableTimes,
+            @PathVariable String token) {
+        Map<String, String> response = new HashMap<>();
+
+        // We use "doctor" role check generally, but here the token itself validates the
+        // doctor.
+        // The service method getDoctorByToken checks if it's a valid doctor token.
+        // But for consistency with other methods, we might want a controller-level
+        // check if needed.
+        // However, getDoctorByToken internal logic handles it.
+
+        int result = doctorService.updateAvailability(token, availableTimes);
+        if (result == 1) {
+            response.put("message", "Availability updated successfully");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        response.put("message", "Update Failed");
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
     @PutMapping("/update/{token}")
-    public ResponseEntity<Map<String, String>> updateDoctor(@RequestBody Doctor doctor, @PathVariable String token) {
+    public ResponseEntity<Map<String, String>> updateDoctor(@Valid @RequestBody Doctor doctor,
+            @PathVariable String token) {
         Map<String, String> response = new HashMap<>();
         if (!service.validateToken(token, "admin").equals("valid")) {
             response.put("message", "Unauthorized");
@@ -128,7 +162,7 @@ public class DoctorController {
             @PathVariable String speciality) {
 
         Map<String, List<Doctor>> response = new HashMap<>();
-        response.put("doctors", doctorService.filterDoctors(name, speciality));
+        response.put("doctors", doctorService.filterDoctors(name, time, speciality));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

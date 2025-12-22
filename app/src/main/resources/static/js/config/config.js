@@ -11,4 +11,4 @@
  *   fetch(`${API_BASE_URL}/api/appointments`)
  */
 
-export const API_BASE_URL = "http://localhost:8082";
+export const API_BASE_URL = "http://localhost:7070";

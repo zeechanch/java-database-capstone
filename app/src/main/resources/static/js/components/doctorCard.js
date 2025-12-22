@@ -60,7 +60,7 @@ export function createDoctorCard(doctor) {
     </div>
   `;
 
-  // Add action buttons if admin
+  // Add action buttons based on role
   if (role === "admin") {
     const actionsContainer = document.createElement("div");
     actionsContainer.className = "doctor-card-actions";
@@ -110,6 +110,20 @@ export function createDoctorCard(doctor) {
     };
 
     actionsContainer.append(editBtn, deleteBtn);
+    card.appendChild(actionsContainer);
+  } else if (role === "loggedPatient") {
+    const actionsContainer = document.createElement("div");
+    actionsContainer.className = "doctor-card-actions";
+
+    const bookBtn = document.createElement("button");
+    bookBtn.className = "btn-book cta-button"; // Added cta-button for style if available, but btn-book is key
+    bookBtn.textContent = "Book Appointment";
+
+    // We can add data attributes to make it easier for the delegate listener
+    bookBtn.dataset.doctorId = doctor.id;
+    bookBtn.classList.add("book-appointment-btn");
+
+    actionsContainer.appendChild(bookBtn);
     card.appendChild(actionsContainer);
   }
 

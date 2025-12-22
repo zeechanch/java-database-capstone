@@ -291,7 +291,7 @@ body {
 
 .card-actions {
   padding: 15px 20px;
-  background: #f8f9fa;
+  background: #d26969;
   display: flex;
   gap: 15px;
 }
@@ -301,7 +301,7 @@ body {
 .btn-reschedule {
   flex: 1;
   padding: 10px;
-  border: none;
+  border: 1px solid black;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -309,28 +309,32 @@ body {
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.5px;
-}
 
-.btn-cancel {
-  background: white;
-  border: 1px solid #ffcdd2;
-  color: #c62828;
-}
-
-.btn-cancel:hover {
-  background: #ffebee;
-  transform: translateY(-2px);
-}
-
-.btn-reschedule {
-  background: var(--primary-color);
+  /* Initial State: Black Background, White Text */
+  background: black;
   color: white;
 }
 
-.btn-reschedule:hover {
-  background: var(--primary-dark);
+/* When hovering the container, buttons turn White BG, Black Text */
+.card-actions:hover .btn-cancel,
+.card-actions:hover .btn-reschedule {
+  background: white;
+  color: black;
+}
+
+/* When hovering the specific button, it reverts/active state */
+.btn-cancel:hover {
+  background: black !important;
+  color: white !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(36, 69, 87, 0.2);
+}
+
+.btn-reschedule:hover {
+  background: black !important;
+  color: white !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 /* ===========================

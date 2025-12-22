@@ -70,7 +70,9 @@ function renderAppointments(searchTerm = "") {
 
   // 1. Filter by Tab
   let filtered = allAppointments.filter(app => {
-    const appDate = new Date(app.appointmentDate);
+    // Use .appointmentTime (LocalDateTime) instead of .appointmentDate (LocalDate)
+    // appointmentDate is just YYYY-MM-DD, which accounts to Midnight UTC -> 5AM PKT
+    const appDate = new Date(app.appointmentTime);
     if (currentTab === 'upcoming') {
       return appDate >= now && app.status !== 2; // 2 = cancelled
     } else {
@@ -89,8 +91,8 @@ function renderAppointments(searchTerm = "") {
   // 3. Sort
   filtered.sort((a, b) => {
     return currentTab === 'upcoming'
-      ? new Date(a.appointmentDate) - new Date(b.appointmentDate) // Ascending
-      : new Date(b.appointmentDate) - new Date(a.appointmentDate); // Descending (History)
+      ? new Date(a.appointmentTime) - new Date(b.appointmentTime) // Ascending
+      : new Date(b.appointmentTime) - new Date(a.appointmentTime); // Descending (History)
   });
 
   // 4. Render
@@ -114,7 +116,7 @@ function createAppointmentCard(app) {
   const card = document.createElement("div");
   card.className = "appt-card";
 
-  const dateObj = new Date(app.appointmentDate);
+  const dateObj = new Date(app.appointmentTime);
   const dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
   const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 

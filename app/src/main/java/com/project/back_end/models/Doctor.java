@@ -29,7 +29,6 @@ public class Doctor {
     @Email
     private String email;
 
-    @NotNull
     @Column(nullable = false)
     @Size(min = 6)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

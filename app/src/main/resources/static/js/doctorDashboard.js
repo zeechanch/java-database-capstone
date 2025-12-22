@@ -1,10 +1,15 @@
 // doctorDashboard.js
-import { getDoctorAppointments } from "./services/doctorServices.js";
+import { getDoctorAppointments, getDoctorDetails, updateDoctor, updateAvailability } from "./services/doctorServices.js";
 
 const grid = document.getElementById("appointmentsGrid");
 const datePicker = document.getElementById("datePicker");
 const searchBar = document.getElementById("searchBar");
 const todayBtn = document.getElementById("todayButton");
+const manageBtn = document.getElementById("manageAvailabilityBtn");
+const modal = document.getElementById("availabilityModal");
+const closeModal = document.querySelector(".close-modal");
+const saveBtn = document.getElementById("saveAvailabilityBtn");
+const timeSlotContainer = document.getElementById("timeSlotContainer");
 
 // Stats Elements
 const elTotal = document.getElementById("totalAppts");
@@ -21,8 +26,15 @@ const getLocalDate = () => {
 let currentAppointments = [];
 let selectedDate = getLocalDate();
 const token = localStorage.getItem("token");
+let currentDoctor = null;
 
-document.addEventListener("DOMContentLoaded", () => {
+const ALL_TIME_SLOTS = [
+  "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
+  "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00",
+  "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00"
+];
+
+document.addEventListener("DOMContentLoaded", async () => {
   if (!token) {
     window.location.href = "/";
     return;
@@ -33,6 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial Load
   loadDashboard();
+
+  // Fetch Doctor Profile to get current availability
+  currentDoctor = await getDoctorDetails(token);
 
   // Event Listeners
   datePicker.addEventListener("change", (e) => {
@@ -55,7 +70,69 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     renderAppointments(filtered);
   });
+
+  // Modal Handlers
+  manageBtn.addEventListener("click", openAvailabilityModal);
+  closeModal.addEventListener("click", () => modal.style.display = "none");
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  saveBtn.addEventListener("click", saveAvailability);
 });
+
+function openAvailabilityModal() {
+  if (!currentDoctor) {
+    alert("Could not fetch doctor details. Please try again.");
+    return;
+  }
+
+  modal.style.display = "flex";
+  renderTimeSlots();
+}
+
+function renderTimeSlots() {
+  timeSlotContainer.innerHTML = "";
+  const currentTimes = currentDoctor.availableTimes || [];
+
+  ALL_TIME_SLOTS.forEach(slot => {
+    const label = document.createElement("label");
+    label.className = "time-checkbox";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = slot;
+    if (currentTimes.includes(slot)) {
+      checkbox.checked = true;
+    }
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(slot));
+    timeSlotContainer.appendChild(label);
+  });
+}
+
+async function saveAvailability() {
+  const checkboxes = timeSlotContainer.querySelectorAll("input[type='checkbox']:checked");
+  const selectedTimes = Array.from(checkboxes).map(cb => cb.value);
+
+  // Call API for availability update only
+  saveBtn.textContent = "Saving...";
+  saveBtn.disabled = true;
+
+  const result = await updateAvailability(selectedTimes, token);
+
+  if (result.success) {
+    alert("Availability updated successfully!");
+    currentDoctor.availableTimes = selectedTimes; // Update local state
+    modal.style.display = "none";
+  } else {
+    alert("Failed to update: " + result.message);
+  }
+
+  saveBtn.textContent = "Save Changes";
+  saveBtn.disabled = false;
+}
 
 async function loadDashboard() {
   grid.innerHTML = '<p class="loading-text">Loading appointments...</p>';
@@ -79,9 +156,9 @@ async function loadDashboard() {
 
 function updateStats(appointments) {
   elTotal.textContent = appointments.length;
-  // Assuming status: 0 = Pending, 1 = Completed, 2 = Cancelled
-  const pending = appointments.filter(a => a.status == 0).length;
-  const completed = appointments.filter(a => a.status == 1).length;
+  // Assuming status: 0/PENDING = Pending, 1/COMPLETED = Completed, 2/CANCELLED = Cancelled
+  const pending = appointments.filter(a => a.status == 0 || a.status === 'PENDING').length;
+  const completed = appointments.filter(a => a.status == 1 || a.status === 'COMPLETED').length;
 
   elPending.textContent = pending;
   elCompleted.textContent = completed;
@@ -142,8 +219,29 @@ function createAppointmentCard(app) {
   let statusClass = "status-pending";
   let statusText = "Pending";
   let showActions = true;
-  if (app.status == 1) { statusClass = "status-completed"; statusText = "Completed"; showActions = false; }
-  if (app.status == 2) { statusClass = "status-cancelled"; statusText = "Cancelled"; showActions = false; }
+
+  // Normalize status to check both numeric and string variants
+  // 0 / PENDING -> Pending
+  // 1 / COMPLETED -> Completed
+  // 2 / CANCELLED -> Cancelled
+
+  if (app.status == 1 || app.status === 'COMPLETED') {
+    statusClass = "status-completed";
+    statusText = "Completed";
+    showActions = false;
+  } else if (app.status == 2 || app.status === 'CANCELLED') {
+    statusClass = "status-cancelled";
+    statusText = "Cancelled";
+    showActions = false;
+  } else if (app.status == 0 || app.status === 'PENDING') {
+    statusClass = "status-pending";
+    statusText = "Pending";
+    showActions = true;
+  } else {
+    // Fallback for unknown status
+    statusText = app.status;
+    showActions = false;
+  }
 
   card.innerHTML = `
         <div class="card-header">

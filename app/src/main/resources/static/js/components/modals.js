@@ -5,6 +5,7 @@ export function openModal(type) {
   if (type === 'addDoctor') {
     modalContent = `
          <h2>Add Doctor</h2>
+         <div id="error-container" class="error-container" style="display: none;"></div>
          <input type="text" id="doctorName" placeholder="Doctor Name" class="input-field">
          <select id="specialization" class="input-field select-dropdown">
              <option value="">Specialization</option>

@@ -200,13 +200,18 @@ async function loadAppointments() {
 
     // Helper function to format status
     const formatStatus = (status) => {
+      // Normalize to string to handle both numeric and string types
+      const s = String(status).toUpperCase();
       const statusMap = {
         'CONFIRMED': { label: 'Confirmed', class: 'status-confirmed' },
         'PENDING': { label: 'Pending', class: 'status-pending' },
+        '0': { label: 'Pending', class: 'status-pending' },
         'CANCELLED': { label: 'Cancelled', class: 'status-cancelled' },
-        'COMPLETED': { label: 'Completed', class: 'status-completed' }
+        '2': { label: 'Cancelled', class: 'status-cancelled' },
+        'COMPLETED': { label: 'Completed', class: 'status-completed' },
+        '1': { label: 'Completed', class: 'status-completed' }
       };
-      return statusMap[status] || { label: status, class: 'status-default' };
+      return statusMap[s] || { label: status, class: 'status-default' };
     };
 
     // Create modern table
@@ -278,7 +283,7 @@ async function adminAddDoctor() {
     availability.push(checkbox.value);
   });
 
-  if (!name || !email || !password || !specialty) {
+  if (!name || !email || !password || !specialty || !phone) {
     alert("Please fill in all required fields.");
     return;
   }
@@ -288,7 +293,7 @@ async function adminAddDoctor() {
     email,
     phone,
     password,
-    specialization: specialty,
+    speciality: specialty,
     availableTimes: availability // Backend expects 'availableTimes' list
   };
 
@@ -302,15 +307,65 @@ async function adminAddDoctor() {
   try {
     const response = await saveDoctor(doctorData, token);
 
-    if (response && (response.success || response.id)) {
-      alert("Doctor added successfully!");
-      closeModal();
-      loadDoctorCards(); // Refresh list
+    // Reset error container
+    const errorContainer = document.getElementById('error-container');
+    if (errorContainer) {
+      errorContainer.style.display = 'none';
+      errorContainer.innerHTML = '';
+    }
+
+    if (response) {
+      // If response is the parsed JSON from fetch in service:
+      // Standard success is { message: "...", id: ... } or status 201/200.
+      // Standard error from GlobalExceptionHandler is { message: "Validation ...", errors: ... } or just { message: "..." }
+
+      // Check for specific error structure (from ValidationFailed.java: { message: "..." } per field?
+      // Actually ValidationFailed.java returns { "message": "error msg" } or multiple fields?
+      // The validation handler iterates field errors but puts them all in 'message' key overwriting each other?
+      // Wait, ValidationFailed.java: errors.put("message", "" + errorMessage); inside a loop.
+      // It unfortunately overwrites 'message' if multiple errors exist. But at least we get one.
+      // Better to check if response has 'message' and if it looks like an error (not success).
+
+      // DoctorController returns { message: "Doctor saved successfully" } on success.
+      // We need to differentiate based on status code, but saveDoctor service might return result directly?
+      // Let's check saveDoctor in doctorServices.js.
+      // If service returns response.json(), we can check response.message.
+
+      // If service throws or returns error object:
+      // The logic relies on what saveDoctor returns.
+      // Assuming saveDoctor returns the JSON object.
+
+      if (response.message === "Doctor saved successfully" || response.message === "Doctor already exists") {
+        if (response.message === "Doctor already exists") {
+          if (errorContainer) {
+            errorContainer.style.display = 'block';
+            errorContainer.textContent = response.message;
+          } else {
+            alert(response.message);
+          }
+        } else {
+          alert("Doctor added successfully!");
+          closeModal();
+          loadDoctorCards();
+        }
+      } else {
+        // Likely an error (validation or other)
+        if (errorContainer) {
+          errorContainer.style.display = 'block';
+          errorContainer.textContent = response.message || "An unknown error occurred.";
+        } else {
+          alert(response.message || "An unknown error occurred.");
+        }
+      }
     } else {
-      alert("Failed to save doctor: " + (response.message || "Unknown error"));
+      alert("Failed to save doctor: Unknown error");
     }
   } catch (error) {
     console.error("Error adding doctor:", error);
+    // If error is from fetch reject (network), show alert.
+    // If it's a 400 response thrown by service? 
+    // We need to see doctorServices.js.
+    // Assuming service returns the error object if 400.
     alert("An error occurred while saving the doctor.");
   }
 }

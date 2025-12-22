@@ -5,6 +5,8 @@ import { bookAppointment } from './services/appointmentRecordService.js';
 import { getPatientData, getPatientAppointments } from './services/patientServices.js';
 import { showToast } from './components/toast.js';
 
+let allDoctors = []; // Store doctors globally for access by ID
+
 document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -20,6 +22,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("searchBar")?.addEventListener("input", filterDoctorsOnChange);
   document.getElementById("filterTime")?.addEventListener("change", filterDoctorsOnChange);
   document.getElementById("filterSpecialty")?.addEventListener("change", filterDoctorsOnChange);
+
+  // Booking Button Delegate
+  document.getElementById("content")?.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".book-appointment-btn");
+    if (!btn) return;
+
+    const doctorId = Number(btn.dataset.doctorId);
+    const doctor = allDoctors.find(d => d.id === doctorId);
+
+    if (!doctor) {
+      showToast("Doctor details not found", "error");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const patient = await getPatientData(token);
+
+    if (patient) {
+      showBookingOverlay(e, doctor, patient);
+    } else {
+      showToast("Could not fetch your details", "error");
+    }
+  });
 });
 
 /* ===========================
@@ -80,6 +105,7 @@ async function loadDoctorCards() {
 
   try {
     const doctors = await getDoctors();
+    allDoctors = doctors || []; // Update global store
     renderDoctorCards(doctors);
   } catch (err) {
     contentDiv.innerHTML = '<p class="error-text">Failed to load doctors list.</p>';
@@ -115,6 +141,7 @@ function filterDoctorsOnChange() {
       // Response structure might differ based on backend implementation
       // Previously it accessed response.doctors, let's robustly handle array or object
       const doctors = Array.isArray(response) ? response : (response.doctors || []);
+      allDoctors = doctors; // Update global store
       renderDoctorCards(doctors);
     })
     .catch(error => {

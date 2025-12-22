@@ -115,4 +115,36 @@ public class PatientController {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+
+    @GetMapping("/appointments")
+    public ResponseEntity<Map<String, Object>> getAppointments(@RequestHeader("Authorization") String authHeader) {
+        Map<String, Object> response = new HashMap<>();
+
+        // 1. Validate Header Format
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("message", "Invalid or missing Authorization header");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        String token = authHeader.substring(7); // Remove "Bearer "
+
+        // 2. Validate Token
+        if (!service.validateToken(token, "patient").equals("valid")) {
+            response.put("message", "Unauthorized or invalid token");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        // 3. Resolve Patient
+        Patient patient = patientService.getPatientDetails(token);
+        if (patient == null) {
+            response.put("message", "Patient not found");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        // 4. Get Appointments
+        List<AppointmentDTO> appointments = patientService.getPatientAppointment(patient.getId());
+        response.put("appointments", appointments);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

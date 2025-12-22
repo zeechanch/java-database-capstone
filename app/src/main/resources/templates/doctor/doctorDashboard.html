@@ -34,6 +34,7 @@
         <div class="dashboard-header">
           <h1>Doctor Dashboard</h1>
           <div class="date-controls">
+            <button id="manageAvailabilityBtn" class="btn-primary">Manage Availability</button>
             <button id="todayButton" class="date-btn active">Today</button>
             <input type="date" id="datePicker" class="date-input" />
           </div>
@@ -79,6 +80,25 @@
       </div>
 
       <div id="footer"></div>
+
+      <!-- Availability Modal -->
+      <div id="availabilityModal" class="modal">
+        <div class="modal-content doctor-modal-content">
+          <div class="modal-header">
+            <h3>Manage Availability</h3>
+            <button class="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>Select the times you are available for appointments:</p>
+            <div id="timeSlotContainer" class="time-slot-grid">
+              <!-- Checkboxes will be injected here -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="saveAvailabilityBtn" class="btn-primary" style="width: 100%;">Save Changes</button>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>

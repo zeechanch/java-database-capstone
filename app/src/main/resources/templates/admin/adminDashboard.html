@@ -55,6 +55,11 @@
         <div id="view-doctors" class="tab-content active">
           <!-- Controls (Search/Filter) -->
           <div class="controls">
+            <!-- Add Doctor Button -->
+            <button class="btn-primary" onclick="openModal('addDoctor')">
+              + Add Doctor
+            </button>
+
             <!-- Search bar -->
             <label for="searchBar" class="visually-hidden">Search doctors</label>
             <input type="search" id="searchBar" name="searchBar" placeholder="Search doctors, name, hospital, or ID..."

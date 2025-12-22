@@ -25,4 +25,12 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
    @Query("SELECT DISTINCT d FROM Doctor d LEFT JOIN FETCH d.availableTimes")
    List<Doctor> findAllWithAvailableTimes();
+
+   @org.springframework.data.jpa.repository.Modifying
+   @Query(value = "DELETE FROM doctor_available_times WHERE doctor_id = :doctorId", nativeQuery = true)
+   void deleteAvailableTimes(@Param("doctorId") Long doctorId);
+
+   @org.springframework.data.jpa.repository.Modifying
+   @Query(value = "INSERT INTO doctor_available_times (doctor_id, time_slot) VALUES (:doctorId, :timeSlot)", nativeQuery = true)
+   void insertAvailableTime(@Param("doctorId") Long doctorId, @Param("timeSlot") String timeSlot);
 }
